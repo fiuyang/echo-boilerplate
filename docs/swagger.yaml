@@ -1,0 +1,530 @@
+definitions:
+  entity.CreateCustomerBatchRequest:
+    properties:
+      customers:
+        items:
+          $ref: '#/definitions/entity.CreateCustomerRequest'
+        type: array
+    required:
+    - customers
+    type: object
+  entity.CreateCustomerRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    required:
+    - address
+    - email
+    - phone
+    - username
+    type: object
+  entity.CustomerResponse:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+  entity.DeleteBatchCustomerRequest:
+    properties:
+      id:
+        items:
+          type: integer
+        type: array
+    required:
+    - id
+    type: object
+  entity.JsonBadRequest:
+    properties:
+      code:
+        example: 400
+        type: integer
+      errors:
+        additionalProperties:
+          type: string
+        example:
+          email: email is required
+          username: username is required
+        type: object
+      status:
+        example: BAD REQUEST
+        type: string
+      trace_id:
+        example: dedc5250-5c20-48c9-9383-fac3ccff2679
+        type: string
+    type: object
+  entity.JsonCreated:
+    properties:
+      code:
+        example: 201
+        type: integer
+      data: {}
+      message:
+        example: Created
+        type: string
+      status:
+        example: CREATED
+        type: string
+      trace_id:
+        example: dedc5250-5c20-48c9-9383-fac3ccff2679
+        type: string
+    type: object
+  entity.JsonInternalServerError:
+    properties:
+      code:
+        example: 500
+        type: integer
+      errors:
+        example: error database or third party
+        type: string
+      status:
+        example: INTERNAL SERVER ERROR
+        type: string
+      trace_id:
+        example: dedc5250-5c20-48c9-9383-fac3ccff2679
+        type: string
+    type: object
+  entity.JsonNotFound:
+    properties:
+      code:
+        example: 404
+        type: integer
+      errors:
+        example: record not found
+        type: string
+      status:
+        example: NOT FOUND
+        type: string
+      trace_id:
+        example: dedc5250-5c20-48c9-9383-fac3ccff2679
+        type: string
+    type: object
+  entity.JsonSuccess:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data: {}
+      message:
+        example: Success
+        type: string
+      status:
+        example: OK
+        type: string
+      trace_id:
+        example: dedc5250-5c20-48c9-9383-fac3ccff2679
+        type: string
+    type: object
+  entity.Meta:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_data:
+        type: integer
+      total_page:
+        type: integer
+    type: object
+  entity.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/entity.Meta'
+      status:
+        type: string
+      trace_id:
+        type: string
+    type: object
+  entity.UpdateCustomerRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      phone:
+        type: string
+      username:
+        type: string
+    required:
+    - address
+    - email
+    - id
+    - phone
+    - username
+    type: object
+info:
+  contact: {}
+  description: Boilerplate API in Go using Echo framework
+  title: Boilerplate API
+  version: "1.0"
+paths:
+  /customers:
+    get:
+      description: Get all customers.
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      - description: email
+        in: query
+        name: email
+        type: string
+      - description: start_date
+        in: query
+        name: start_date
+        type: string
+      - description: end_date
+        in: query
+        name: end_date
+        type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.CustomerResponse'
+                  type: array
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Get all customers.
+      tags:
+      - customers
+    post:
+      description: Create customer.
+      parameters:
+      - in: formData
+        name: address
+        required: true
+        type: string
+      - in: formData
+        name: email
+        required: true
+        type: string
+      - in: formData
+        name: phone
+        required: true
+        type: string
+      - in: formData
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonCreated'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Create customer
+      tags:
+      - customers
+  /customers/{customerId}:
+    get:
+      description: get customer by id.
+      parameters:
+      - description: customer_id
+        in: path
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.CustomerResponse'
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: get customer by id.
+      tags:
+      - customers
+    patch:
+      description: update customer.
+      parameters:
+      - description: update customer
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UpdateCustomerRequest'
+      - description: customer_id
+        in: path
+        name: customerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: update customer
+      tags:
+      - customers
+  /customers/batch:
+    delete:
+      description: Delete batch customer.
+      parameters:
+      - description: delete batch customer
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.DeleteBatchCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Delete batch customer
+      tags:
+      - customers
+    post:
+      description: Create customer batch.
+      parameters:
+      - description: create customer batch
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.CreateCustomerBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonCreated'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Create customer batch
+      tags:
+      - customers
+  /customers/export:
+    get:
+      description: Export Excel customer.
+      parameters:
+      - description: start_date
+        in: query
+        name: start_date
+        type: string
+      - description: end_date
+        in: query
+        name: end_date
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      - description: email
+        in: query
+        name: email
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Export Excel customer.
+      tags:
+      - customers
+  /customers/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import Excel customer.
+      parameters:
+      - description: Import Excel customer
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Data
+          schema:
+            allOf:
+            - $ref: '#/definitions/entity.JsonSuccess'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/entity.JsonBadRequest'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/entity.JsonNotFound'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/entity.JsonInternalServerError'
+      summary: Import Excel customer.
+      tags:
+      - customers
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
