@@ -1,36 +1,39 @@
 package config
 
 import (
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+	"os"
 )
 
-type Config struct {
-	DBHost      string `mapstructure:"POSTGRES_HOST"`
-	DBUsername  string `mapstructure:"POSTGRES_USER"`
-	DBPassword  string `mapstructure:"POSTGRES_PASSWORD"`
-	DBName      string `mapstructure:"POSTGRES_DB"`
-	DBPort      string `mapstructure:"POSTGRES_PORT"`
-	KongUrl     string `mapstructure:"KONG_URL"`
-	SwaggerHost string `mapstructure:"SWAGGER_HOST"`
-	SwaggerUrl  string `mapstructure:"SWAGGER_URL"`
-	Environment string `mapstructure:"ENVIRONMENT"`
-	ServerPort  string `mapstructure:"PORT"`
-}
-
-func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-	viper.SetConfigFile(".env")
-
-	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
+func Get() *Config {
+	err := godotenv.Load()
 	if err != nil {
-		return
+		panic(err)
 	}
-
-	err = viper.Unmarshal(&config)
-	return
+	return &Config{
+		Server: Server{
+			Port: os.Getenv("SERVER_PORT"),
+		},
+		Database: Database{
+			Host: os.Getenv("DB_HOST"),
+			Port: os.Getenv("DB_PORT"),
+			User: os.Getenv("DB_USER"),
+			Pass: os.Getenv("DB_PASS"),
+			Name: os.Getenv("DB_NAME"),
+		},
+		Swagger: Swagger{
+			Host: os.Getenv("SWAGGER_HOST"),
+			Url:  os.Getenv("SWAGGER_URL"),
+			Mode: os.Getenv("SWAGGER_MODE"),
+		},
+		Kong: Kong{
+			Url: os.Getenv("KONG_URL"),
+		},
+		Obs: ObsHuawei{
+			Ak:       os.Getenv("OBS_HUAWEI_AK"),
+			Sk:       os.Getenv("OBS_HUAWEI_SK"),
+			Endpoint: os.Getenv("OBS_HUAWEI_ENDPOINT"),
+			Bucket:   os.Getenv("OBS_HUAWEI_BUCKET"),
+		},
+	}
 }

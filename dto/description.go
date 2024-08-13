@@ -1,4 +1,4 @@
-package entity
+package dto
 
 type JsonBadRequest struct {
 	Code    int                    `json:"code" example:"400"`
@@ -26,7 +26,7 @@ type JsonCreated struct {
 type JsonInternalServerError struct {
 	Code    int    `json:"code" example:"500"`
 	Status  string `json:"status" example:"INTERNAL SERVER ERROR"`
-	Errors  string `json:"errors,omitempty" example:"error database or third party"`
+	Errors  string `json:"errors,omitempty" example:"error engine or third party"`
 	TraceID string `json:"trace_id" example:"dedc5250-5c20-48c9-9383-fac3ccff2679"`
 }
 

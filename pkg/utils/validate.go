@@ -1,22 +1,17 @@
 package utils
 
 import (
-	"fmt"
+	"encoding/base64"
 	"github.com/go-playground/validator/v10"
-	"gorm.io/gorm"
 	"mime/multipart"
-	"path/filepath"
 	"reflect"
-	"regexp"
 	"strings"
 )
 
-var db *gorm.DB
-
-func InitializeValidator(db *gorm.DB) *validator.Validate {
+func InitializeValidator() *validator.Validate {
 	validate := validator.New()
 
-	_ = validate.RegisterValidation("notEmptyStringSlice", func(fl validator.FieldLevel) bool {
+	_ = validate.RegisterValidation("sliceString", func(fl validator.FieldLevel) bool {
 		slices := fl.Field().Interface().([]string)
 		if len(slices) == 0 {
 			return false
@@ -29,15 +24,7 @@ func InitializeValidator(db *gorm.DB) *validator.Validate {
 		return true
 	})
 
-	_ = validate.RegisterValidation("date", func(fl validator.FieldLevel) bool {
-		dateRegex := regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})$`)
-		if !dateRegex.MatchString(fl.Field().String()) {
-			return false
-		}
-		return true
-	})
-
-	_ = validate.RegisterValidation("notEmptyIntSlice", func(fl validator.FieldLevel) bool {
+	_ = validate.RegisterValidation("sliceInt", func(fl validator.FieldLevel) bool {
 		slices := fl.Field().Interface().([]int)
 		if len(slices) == 0 {
 			return false
@@ -50,26 +37,52 @@ func InitializeValidator(db *gorm.DB) *validator.Validate {
 		return true
 	})
 
-	_ = validate.RegisterValidation("isString", func(fl validator.FieldLevel) bool {
-		_, ok := fl.Field().Interface().(string)
-		if !ok {
+	_ = validate.RegisterValidation("equal", func(fl validator.FieldLevel) bool {
+		fieldName := fl.Param()
+		field := fl.Parent().FieldByName(fieldName)
+		if !field.IsValid() {
+			return false
+		}
+		return field.Interface() == fl.Field().Interface()
+	})
+
+	_ = validate.RegisterValidation("image", func(fl validator.FieldLevel) bool {
+		file, ok := fl.Field().Interface().(*multipart.FileHeader)
+		if !ok || file == nil {
+			return false
+		}
+
+		allowedTypes := []string{"image/jpeg", "image/png", "image/jpg"}
+		if !contains(allowedTypes, file.Header.Get("Content-Type")) {
+			return false
+		}
+
+		const maxSize = 5 * 1024 * 1024
+		if file.Size > maxSize {
 			return false
 		}
 
 		return true
 	})
 
-	_ = validate.RegisterValidation("isInt", func(fl validator.FieldLevel) bool {
-		_, ok := fl.Field().Interface().(int)
-		if !ok {
+	_ = validate.RegisterValidation("base64Image", func(fl validator.FieldLevel) bool {
+		data := fl.Field().String()
+
+		if !strings.HasPrefix(data, "data:image/") {
 			return false
 		}
 
-		return true
+		base64Data := strings.SplitN(data, ",", 2)
+		if len(base64Data) != 2 {
+			return false
+		}
+
+		_, err := base64.StdEncoding.DecodeString(base64Data[1])
+		return err == nil
 	})
 
 	_ = validate.RegisterValidation("unique", func(fl validator.FieldLevel) bool {
-		return ValidateUnique(db, fl)
+		return IsUnique(fl)
 	})
 
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
@@ -80,56 +93,14 @@ func InitializeValidator(db *gorm.DB) *validator.Validate {
 		return name
 	})
 
-	_ = validate.RegisterValidation("allowedMimeTypeExcel", func(fl validator.FieldLevel) bool {
-		file, ok := fl.Field().Interface().(*multipart.FileHeader)
-		if !ok {
-			return false
-		}
-
-		allowedExtensions := map[string]bool{
-			".xls":  true,
-			".xlsx": true,
-		}
-
-		fileExtension := getFileExtension(file.Filename)
-		fmt.Println("fileExtension", fileExtension)
-		return allowedExtensions[fileExtension]
-	})
-
-	_ = validate.RegisterValidation("allowedMimeTypeDoc", func(fl validator.FieldLevel) bool {
-		file, ok := fl.Field().Interface().(*multipart.FileHeader)
-		if !ok {
-			return false
-		}
-
-		allowedExtensions := map[string]bool{
-			".doc": true,
-		}
-
-		fileExtension := getFileExtension(file.Filename)
-		return allowedExtensions[fileExtension]
-	})
-
-	_ = validate.RegisterValidation("allowedMimeTypeImage", func(fl validator.FieldLevel) bool {
-		file, ok := fl.Field().Interface().(string)
-		if !ok {
-			return false
-		}
-
-		allowedExtensions := map[string]bool{
-			".jpeg": true,
-			".jpg":  true,
-			".png":  true,
-		}
-
-		fileExtension := getFileExtension(file)
-		return allowedExtensions[fileExtension]
-	})
-
 	return validate
 }
 
-func getFileExtension(filename string) string {
-	ext := strings.ToLower(filepath.Ext(filename))
-	return ext
+func contains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }

@@ -1,9 +1,9 @@
-package middlewares
+package middleware
 
 import (
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"scylla/entity"
+	"scylla/dto"
 )
 
 func NotFoundMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
@@ -11,7 +11,7 @@ func NotFoundMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		err := next(c)
 
 		if err == echo.ErrNotFound {
-			return c.JSON(http.StatusNotFound, entity.Error{
+			return c.JSON(http.StatusNotFound, dto.Error{
 				Code:    http.StatusNotFound,
 				Status:  "NOT FOUND",
 				Errors:  "Endpoint not found",

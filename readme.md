@@ -18,6 +18,16 @@ Before you running the program, make sure you've run this command:
  make dev
 ```
 
+### Make Mocks
+```bash
+   make mock source= destination=        
+```
+
+### Example Mocks
+```bash
+   make mock source=repo/customer_repo.go destination=mocks/customer_repo_mock.go           
+```
+
 ### Re-Init Docs Swagger
 ```bash
  make doc

@@ -3,7 +3,7 @@ package exception
 import (
 	"fmt"
 	"net/http"
-	"scylla/entity"
+	"scylla/dto"
 	"scylla/pkg/utils"
 	"strings"
 	"unicode"
@@ -56,7 +56,7 @@ func validationError(err error, ctx echo.Context) bool {
 			case "lte":
 				report[fieldName] = fmt.Sprintf("%s value must be lower than %s", fieldName, e.Param())
 			case "unique":
-				report[fieldName] = fmt.Sprintf("%s has already been taken %s", fieldName)
+				report[fieldName] = fmt.Sprintf("%s has already been taken", fieldName)
 			case "max":
 				report[fieldName] = fmt.Sprintf("%s value must be lower than %s", fieldName, e.Param())
 			case "min":
@@ -70,22 +70,26 @@ func validationError(err error, ctx echo.Context) bool {
 			case "len":
 				report[fieldName] = fmt.Sprintf("%s value must be exactly %s characters long", fieldName, e.Param())
 			case "alphanum":
-				report[fieldName] = fmt.Sprintf("%s value must be char and numeric", fieldName, e.Param())
-			case "notEmptyStringSlice":
+				report[fieldName] = fmt.Sprintf("%s value must be char and numeric %s", fieldName, e.Param())
+			case "sliceString":
 				report[fieldName] = fmt.Sprintf("%s value ​​in the array cannot be empty is string", fieldName)
 			case "dive":
 				report[fieldName] = fmt.Sprintf("%s value ​​in the array cannot be empty", fieldName)
-			case "date":
+			case "datetime":
 				report[fieldName] = fmt.Sprintf("%s value must be date (yyyy-mm-dd)", fieldName)
-			case "notEmptyIntSlice":
+			case "required_if":
+				report[fieldName] = fmt.Sprintf("%s must be filled in if %s", fieldName, e.Param())
+			case "sliceInt":
 				report[fieldName] = fmt.Sprintf("%s value ​​in the array cannot be empty is int", fieldName)
-			case "isInt":
-				report[fieldName] = fmt.Sprintf("%s value must be of type int", fieldName)
-			case "isString":
-				report[fieldName] = fmt.Sprintf("%s value must be of type string", fieldName)
+			case "equal":
+				report[fieldName] = fmt.Sprintf("%s and %s do not match do not match", fieldName, e.Param())
+			case "image":
+				report[fieldName] = fmt.Sprintf("%s file must be of type jpg, jpeg, png", fieldName)
+			case "base64Image":
+				report[fieldName] = fmt.Sprintf("%s value must be base64 encoded image", fieldName)
 			}
 		}
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusBadRequest,
 			Status: "BAD REQUEST",
 			Errors: report,
@@ -100,7 +104,7 @@ func validationError(err error, ctx echo.Context) bool {
 func excelValidation(err error, ctx echo.Context) bool {
 	exception, ok := err.(*ExcelValidation)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusBadRequest,
 			Status: "BAD REQUEST",
 			Errors: exception.Errors,
@@ -115,7 +119,7 @@ func excelValidation(err error, ctx echo.Context) bool {
 func notFoundError(err error, ctx echo.Context) bool {
 	exception, ok := err.(*NotFoundStruct)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusNotFound,
 			Status: "NOT FOUND",
 			Errors: exception.Error(),
@@ -130,7 +134,7 @@ func notFoundError(err error, ctx echo.Context) bool {
 func badRequestError(err error, ctx echo.Context) bool {
 	exception, ok := err.(*BadRequestStruct)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusBadRequest,
 			Status: "BAD REQUEST",
 			Errors: exception.Error(),
@@ -145,7 +149,7 @@ func badRequestError(err error, ctx echo.Context) bool {
 func unauthorizedError(err error, ctx echo.Context) bool {
 	exception, ok := err.(*UnauthorizedStruct)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusUnauthorized,
 			Status: "UNAUTHORIZED",
 			Errors: exception.Error(),
@@ -160,7 +164,7 @@ func unauthorizedError(err error, ctx echo.Context) bool {
 func forbiddenError(err error, ctx echo.Context) bool {
 	exception, ok := err.(*ForbiddenStruct)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusForbidden,
 			Status: "FORBIDDEN",
 			Errors: exception.Error(),
@@ -175,7 +179,7 @@ func forbiddenError(err error, ctx echo.Context) bool {
 func internalServerError(err error, ctx echo.Context) bool {
 	exception, ok := err.(*InternalServerErrorStruct)
 	if ok {
-		webResponse := entity.Error{
+		webResponse := dto.Error{
 			Code:   http.StatusInternalServerError,
 			Status: "INTERNAL SERVER ERROR",
 			Errors: exception.Error(),

@@ -1,4 +1,6 @@
-package entity
+package dto
+
+import "gorm.io/gorm"
 
 type Response struct {
 	Code    int         `json:"code"`
@@ -30,13 +32,22 @@ type Meta struct {
 	TotalPage int `json:"total_page"`
 }
 
-//
-//func Scopes(page int, limit int) func(db *gorm.DB) *gorm.DB {
-//	return func(db *gorm.DB) *gorm.DB {
-//		offset := (page - 1) * limit
-//		return db.Offset(offset).Limit(limit)
-//	}
-//}
+func Paginate(page int, limit int) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if page <= 0 {
+			page = 1
+		}
+
+		switch {
+		case limit > 100:
+			limit = 100
+		case limit <= 0:
+			limit = 10
+		}
+		offset := (page - 1) * limit
+		return db.Offset(offset).Limit(limit)
+	}
+}
 
 type GeneralQueryFilter struct {
 	Page     int    `query:"page"`

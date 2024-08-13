@@ -2,10 +2,10 @@
 include .env
 
 dev:
-	@go run main.go
+	@go run cmd/api/main.go
 
 doc:
-	@swag init
+	@swag init -g cmd/api/main.go
 
 dev-reload:
 	@air
@@ -28,4 +28,7 @@ migrateForce:
 migrateDrop:
 	migrate -path pkg/migrations -database $(DATABASE_URL) -verbose drop
 
-.PHONY: dev doc dev-reload install migration migrateUp migrateDown migrateForce migrateDrop
+mock:
+	mockgen --source=$(source) -destination=$(destination)
+
+.PHONY: dev doc dev-reload install migration migrateUp migrateDown migrateForce migrateDrop mock
