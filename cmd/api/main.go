@@ -11,6 +11,7 @@ import (
 	"scylla/handler"
 	"scylla/pkg/config"
 	"scylla/pkg/connection"
+	"scylla/pkg/engine"
 	"scylla/pkg/exception"
 	middlewares "scylla/pkg/middleware"
 	"scylla/pkg/utils"
@@ -86,6 +87,6 @@ func main() {
 	//docs swagger
 	app.GET("docs/*", echoSwagger.WrapHandler)
 
-	//start
-	app.Logger.Fatal(app.Start(":" + conf.Server.Port))
+	//start server with graceful shutdown
+	engine.StartServerWithGracefulShutdown(app, conf.Server.Port)
 }
